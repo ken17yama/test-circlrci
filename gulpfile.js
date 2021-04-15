@@ -4,7 +4,6 @@ const txtreplace = require("gulp-replace");
 
 /**
  * get template code
- * @param {String} pathName
  */
 function getSource(pathName) {
 	let valid = false;
@@ -23,29 +22,12 @@ function getSource(pathName) {
 }
 
 /**
- * 再帰処理
- * @param {String} stringソース
- * @param {Boorean} complete
- */
-function getInclude(string, complete) {
-	const str = string.replace(
-		/<!--\s?#include virtual="(.+)"\s?-->/g,
-		(mc, p) => {
-			return getSource(`src/html/**/${p}.html`);
-		}
-	);
-	return complete
-		? string
-		: getInclude(str, !str.match(/<!--\s?#include virtual="(.+)"\s?-->/g));
-}
-
-/**
  * html
  */
 function html() {
 	return (
 		gulp
-			.src(`src/html/**/*.html`)
+			.src(['src/html/**/*.*', '!src/html/common/**/*.*'])
 			/* Includeをたどってソースを合成 */
 			.pipe(
 				txtreplace(/<!--\s?#include virtual="(.+)"\s?-->/g, (match, p1) => {
