@@ -11,6 +11,9 @@
 			<li><a href="./no_include.html">no_include</a></li>
 		</ul>
 	</nav>
+	<nav>
+		<!-- #include const="breadcrumb" -->
+	</nav>
 </header>
 	<main>
 		<?php echo '<p>Hello World</p>'; ?>

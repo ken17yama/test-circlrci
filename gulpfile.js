@@ -1,4 +1,5 @@
 const gulp = require("gulp");
+const tap = require('gulp-tap');
 const fs = require("fs");
 const txtreplace = require("gulp-replace");
 
@@ -21,6 +22,36 @@ function getSource(pathName) {
 		: ``; // 見つからなかった場合のメッセージ
 }
 
+function replaceDynamicVariables(file) {
+	const cutStr = 'src\\html\\'
+	// console.log(file.path)
+	var fileToPath = file.path.slice(file.path.indexOf(cutStr) + cutStr.length);
+	console.log(fileToPath)
+	const paths = fileToPath.split('\\');
+	console.log(paths);
+
+	let navItems = ''
+	const re_title = /(?<=<title>).*?(?=<\/title>)/i
+
+	for (const path of paths) {
+		console.log(path);
+
+		// URLを組み立てる必要あり（どうする！！）
+		try {
+			const contents = fs.readFileSync('src/html/index.html', 'utf8')
+			console.log(contents.match(re_title))
+		} catch (err) {
+			console.log(err)
+		}
+
+		navItems += `<li><a href="${pageURL}">${pageTitle}</a></li>`
+	}
+
+	file.contents = new Buffer(String(file.contents)
+		.replace('<!-- #include const="breadcrumb" -->', navItems)
+	);
+}
+
 /**
  * html
  */
@@ -30,6 +61,7 @@ function html() {
 			.src(['src/html/**/*.*', '!src/html/common/**/*.*'])
 			/* Includeをたどってソースを合成 */
 			.pipe(
+				// virtualの値が「p1」に入る
 				txtreplace(/<!--\s?#include virtual="(.+)"\s?-->/g, (match, p1) => {
 					const result = getSource(`src/html/common/${p1}.html`);
 					// 再帰的にIncludeを合成
@@ -53,6 +85,13 @@ function html() {
 					);
 				})
 			)
+			.pipe(tap(replaceDynamicVariables))
+			// .pipe(txtreplace('<!-- #include const="breadcrumb" -->', (match, p1, offset, string) => {
+			// 	console.log('-------------------------')
+			// 	return '<ul><li>aaa</li></ul>'
+			// })
+			// )
+			// .pipe(txtreplace('<!-- #include const="breadcrumb" -->', '<ul><li></li></ul>'))
 			.pipe(gulp.dest(`dist`))
 	);
 }
